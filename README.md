@@ -1,2 +1,2 @@
-Hi, I’m Chidinma, Cybersecurity Analyst specializing in Blue Team + GRC.
-This repository tracks my security projects and skills progression.
+Hi, I’m Chidinma, current Cybersecurity Instructor building a home SOC lab. 
+Here is a repo where I will be tracking the process and projects.
