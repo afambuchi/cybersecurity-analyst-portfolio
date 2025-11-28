@@ -31,4 +31,3 @@ This file outlines how VMs are created and configured in Proxmox.
 
 ## Storage
 VM disks are stored in `local-lvm` for performance and snapshot support.
-
