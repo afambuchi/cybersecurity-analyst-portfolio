@@ -13,3 +13,6 @@ Future additions:
 - Active Directory architecture
 - SIEM and logging pipeline topology
 - Endpoint visibility and management structure
+
+## Phase 1 Network Diagram
+![Phase 1 Network Diagram](phase1-network-diagram.png)

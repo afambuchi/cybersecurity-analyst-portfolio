@@ -56,6 +56,10 @@ Current lab networks:
   - DHCP range: `10.0.10.100 – 10.0.10.200`
   - Analyst workstation and future SOC components live here
 
+### Architecture Diagram
+See the Phase 1 network topology here:
+[architecture/phase1-network-diagram.png](architecture/phase1-network-diagram.png)
+
 Planned expansion:
 - Additional VLAN-backed subnets for:
   - Domain controllers and core infrastructure
