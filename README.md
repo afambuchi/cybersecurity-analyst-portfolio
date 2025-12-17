@@ -1,137 +1,99 @@
-# Portable SOC Lab Environment
+# Proxmox-Based SOC Lab (Active Build)
 
-This repository documents the portable SOC lab I am building for demonstrations, advanced practice, and research. The environment is designed to run on a single mini-PC (KAMRUI AK1 Plus with Proxmox) and supports realistic security operations workflows in a compact footprint.
+This repository documents the design, teardown, and rebuild of a Proxmox-based SOC lab focused on Active Directory, Linux domain integration, and security operations fundamentals.
 
-I use this lab to:
-- Validate and deepen the topics I teach in cybersecurity courses
-- Prototype detection logic and incident response workflows
-- Demonstrate modern network segmentation, access control, and monitoring
+This lab is intentionally documented end-to-end, including architectural decisions, misconfigurations, resets, and rebuilds. The goal is to reflect real-world SOC and infrastructure work rather than a “perfect” lab environment.
 
 ---
 
-## High-Level Architecture
+## Lab Overview
 
-**Platform**
+This SOC lab is built to simulate an enterprise-style environment with:
 
-- Proxmox VE running on a mini-PC (Intel N95, 16 GB RAM)
-- Internal and external networks implemented with Proxmox bridges
-- Remote access using Tailscale for secure management from any location
+- Active Directory Domain Services
+- Linux systems joined to Active Directory
+- Centralized DNS and identity management
+- Secure network segmentation
+- Analyst workstation workflows
 
-**Core Components**
-
-- **Ubuntu Firewall VM**
-  - Acts as the primary router and firewall for the lab
-  - Two interfaces:
-    - `ens18` (WAN) → home network (192.168.1.0/24)
-    - `ens19` (LAN) → lab network (10.0.10.0/24)
-  - Uses `nftables` for firewalling and NAT
-  - Provides DHCP for the 10.0.10.0/24 network
-
-- **Analyst Workstation (Linux)**
-  - Lives on the 10.0.10.0/24 network
-  - Used for analysis, testing, and management
-  - Will also host Python tooling and automation experiments
-
-- **Planned VMs**
-  - Windows Server with Active Directory
-  - Windows 11 endpoint
-  - Wazuh SIEM stack
-  - FleetDM for endpoint management
-  - Kali Linux for controlled offensive testing
-
-A more detailed architecture and network description is in [`docs/01-architecture.md`](docs/01-architecture.md) and [`docs/02-networking-firewall.md`](docs/02-networking-firewall.md).
+The lab is designed for hands-on learning, troubleshooting, and SOC analyst skill development.
 
 ---
 
-## Network Design
+## Reset and Rebuild Decision
 
-Current lab networks:
+During the initial build, multiple layered networking and DNS issues were encountered across virtual machines. Rather than continuing to patch a fragile environment, the decision was made to fully wipe all VMs and rebuild the lab cleanly.
 
-- **Home / WAN:** `192.168.1.0/24`
-  - Default gateway provided by the home router
-  - Proxmox host and firewall WAN interface live here
+This reset allowed for:
 
-- **SOC Lab LAN:** `10.0.10.0/24`
-  - Default gateway: `10.0.10.1` (Ubuntu firewall)
-  - DHCP range: `10.0.10.100 – 10.0.10.200`
-  - Analyst workstation and future SOC components live here
+- Proper install order
+- Clean DNS and AD configuration
+- Correct network design from the start
+- Stronger documentation and repeatability
 
-### Architecture Diagram
-See the Phase 1 network topology here:
-[architecture/phase1-network-diagram.png](architecture/phase1-network-diagram.png)
-
-Planned expansion:
-- Additional VLAN-backed subnets for:
-  - Domain controllers and core infrastructure
-  - Workstations / clients
-  - Security tooling (Wazuh, FleetDM, etc.)
-  - Red team / testing
+This reflects a real-world skill: knowing when to stop, reset, and rebuild correctly.
 
 ---
 
-## Firewall Implementation (Ubuntu + nftables)
+## Current Architecture (Post-Rebuild)
 
-The firewall VM replaces traditional firewall appliances and is built to be transparent and customizable.
+**Infrastructure**
+- Hypervisor: Proxmox
+- Network Range: 10.0.10.0/24
 
-Key configuration files (sanitized for public sharing):
-
-- [`firewall/nftables.conf`](firewall/nftables.conf)  
-  - Defines input, forward, and output chains
-  - Enables LAN → WAN forwarding and NAT
-  - Restricts direct access to the firewall itself
-
-- [`firewall/netplan-firewall.yaml`](firewall/netplan-firewall.yaml)  
-  - Configures:
-    - `ens18` with DHCP on the WAN side
-    - `ens19` with static `10.0.10.1/24` on LAN
-
-- [`firewall/dhcpd.conf`](firewall/dhcpd.conf)  
-  - Implements DHCP for `10.0.10.0/24`
-
-The build process and troubleshooting notes are in [`firewall/notes-firewall-build.md`](firewall/notes-firewall-build.md).
+**Virtual Machines**
+- DC01 (Windows Server)
+  - Active Directory Domain Services
+  - DNS
+  - Domain: soc.local
+- Analyst01 (Ubuntu Linux)
+  - Joined to Active Directory
+  - SSSD + Kerberos authentication
+  - Domain user login enabled
 
 ---
 
-## Proxmox Layout
+## Completed Milestones
 
-The Proxmox configuration uses:
-
-- `vmbr0` as the external bridge connected to the physical NIC
-- `vmbr1` as an internal-only bridge for the SOC LAN
-
-Each VM in the lab is attached to one of these bridges depending on its role. The firewall VM has one NIC on each bridge and routes traffic between them.
-
-More detail can be found in [`docs/03-proxmox-layout.md`](docs/03-proxmox-layout.md).
+- Windows Server installed and promoted to Domain Controller
+- DNS configured and validated
+- Linux analyst VM successfully joined to Active Directory
+- Domain user authentication verified on Linux
+- DNS resolution confirmed between systems
 
 ---
 
-## Lab Usage and Scenarios
+## In Progress
 
-As this environment evolves, I will add:
+- Time synchronization with domain controller
+- Additional Linux hardening
+- Logging and monitoring planning
+- SOC tooling integration
 
-- Detection and investigation scenarios in [`detection-lab/`](detection-lab/)
-- Example logs, alerts, and queries based on Wazuh and other tools
-- Python-based automation for enrichment, triage, or containment workflows
+---
 
-The intent is for this repository to function both as:
-- A professional portfolio of my SOC lab design and implementation, and
-- A reference that students and peers can use to build similar environments.
+## Lessons Learned
+
+- DNS must be correct before anything else will work
+- Install order matters more than expected
+- Restarting clean is often faster than troubleshooting deeply broken state
+- Documentation during failure is just as valuable as documentation during success
 
 ---
 
 ## Roadmap
 
-Planned next steps:
-
-- [ ] Finalize Windows Server AD and Windows 11 endpoint
-- [ ] Deploy Wazuh and integrate with endpoints
-- [ ] Add FleetDM for endpoint visibility
-- [ ] Introduce VLAN segmentation for separate security zones
-- [ ] Publish example detection and response playbooks
-- [ ] Add Python tooling for automation and incident response examples
+- Additional Linux clients
+- Windows workstation
+- Centralized logging
+- Detection and alerting workflows
+- SOC-style investigation scenarios
 
 ---
 
-## Notes
+## Documentation
 
-All configuration files in this repository are sanitized for public sharing. No real secrets, keys, or confidential data are included. IP addresses and hostnames are either generic or specific to the lab environment only.
+Detailed notes and configuration steps will continue to be added as the lab evolves.
+
+This repository is a living project.
+  
