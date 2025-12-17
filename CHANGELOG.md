@@ -6,6 +6,24 @@ This project follows an iterative lab-build approach. Entries reflect architectu
 
 ---
 
+## [2.2.0] – Lab Reset and Firewall Rebuild
+
+### Added
+- pfSense CE 2.8.1 successfully installed and configured in Proxmox
+- WAN/LAN interface assignment and LAN gateway configuration
+- HTTPS WebConfigurator enabled and verified
+
+### Changed
+- Lab architecture rebuilt from a clean Proxmox environment
+- Firewall approach changed from custom Ubuntu firewall to pfSense
+- VM build order restructured to prioritize DNS and AD stability
+
+### Lessons Learned
+- Firewall placement and DNS order are critical in SOC environments
+- Incremental verification prevents cascading failures
+
+---
+
 ## [Phase 2] Reset and Structured Rebuild 12/2025
 
 ### Added
